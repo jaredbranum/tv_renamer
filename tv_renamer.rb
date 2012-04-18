@@ -5,7 +5,7 @@ def rename_season(n=1)
   dir = "#{Dir.pwd}/Season #{n}"
   ep = 0
   Dir.foreach(dir) do |item|
-    next if item[0] == '.'
+    next if item[0].chr == '.'
     if matchdata = /s?\d+[ex](\d+)/i.match(item)
       ep = matchdata[1].to_i
     else
