@@ -35,7 +35,7 @@ if subdirs.count > 0 # season subdirs
     rename_season(season[1].to_i)
   end
 else # multiple seasons
-  if season = /^Season (\d+)\/$/i.match(File.basename(Dir.pwd))
+  if season = /^Season (\d+)$/i.match(File.basename(Dir.pwd))
     Dir.chdir("..")
     rename_season(season[1].to_i)
   else
