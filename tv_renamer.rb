@@ -20,7 +20,10 @@ def rename_season(n=1, titles=false)
     end
     ext = item[/\.([^\.]+)$/,1]
     ep_title = get_title(show, n, ep)
-    new_name = "#{show} - S#{pad_zero(n)}E#{pad_zero(ep)} - #{ep_title}.#{ext}"
+    new_name = if ep_title
+      "#{show} - S#{pad_zero(n)}E#{pad_zero(ep)} - #{ep_title}.#{ext}"
+    else
+      "#{show} - S#{pad_zero(n)}E#{pad_zero(ep)}.#{ext}"
     puts "Rename \"#{item}\" to \"#{new_name}\"? [yes/no]"
     yn = gets.chomp
     if /^y(?:(?:es)|$)/i.match(yn)
@@ -40,7 +43,8 @@ def get_title(series, season, ep)
   url = URI.parse(URI.encode(API_PATH + "&show=#{series}&ep=#{season}x#{ep}"))
   res = Net::HTTP.get_response(url)
   doc = Nokogiri::XML(res.body)
-  doc.xpath('/show/episode/title').first.content
+  node = doc.xpath('/show/episode/title').first
+  node.nil? nil : node.content
 end
 
 def pad_zero(n)
