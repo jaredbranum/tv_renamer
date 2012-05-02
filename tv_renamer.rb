@@ -24,6 +24,7 @@ def rename_season(n=1, titles=false)
       "#{show} - S#{pad_zero(n)}E#{pad_zero(ep)} - #{ep_title}.#{ext}"
     else
       "#{show} - S#{pad_zero(n)}E#{pad_zero(ep)}.#{ext}"
+    end
     puts "Rename \"#{item}\" to \"#{new_name}\"? [yes/no]"
     yn = gets.chomp
     if /^y(?:(?:es)|$)/i.match(yn)
@@ -44,7 +45,7 @@ def get_title(series, season, ep)
   res = Net::HTTP.get_response(url)
   doc = Nokogiri::XML(res.body)
   node = doc.xpath('/show/episode/title').first
-  node.nil? nil : node.content
+  node.nil? ? nil : node.content
 end
 
 def pad_zero(n)
