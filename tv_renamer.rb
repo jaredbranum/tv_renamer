@@ -38,7 +38,7 @@ end
 
 def get_title(series, season, ep)
   url = URI.parse(URI.encode(API_PATH + "&show=#{series}&ep=#{season}x#{ep}"))
-  res = Net::HTTP.get_response(uri)
+  res = Net::HTTP.get_response(url)
   doc = Nokogiri::XML(res.body)
   doc.xpath('/show/episode/title').first.content
 end
