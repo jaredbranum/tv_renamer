@@ -43,7 +43,12 @@ end
 
 def get_title(series, season, ep)
   url = URI.parse(URI.encode(API_PATH + "&show=#{series}&ep=#{season}x#{ep}"))
-  res = Net::HTTP.get_response(url)
+  begin
+    res = Net::HTTP.get_response(url)
+  rescue Errno::ECONNRESET => e
+    puts "Error retrieving episode title from database"
+    return nil
+  end
   doc = Nokogiri::XML(res.body)
   node = doc.xpath('/show/episode/title').first
   node.nil? ? nil : node.content
