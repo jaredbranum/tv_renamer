@@ -46,7 +46,7 @@ def get_title(series, season, ep)
   begin
     res = Net::HTTP.get_response(url)
   rescue Errno::ECONNRESET => e
-    puts "Error retrieving episode title from database"
+    puts "Error retrieving episode title from database."
     return nil
   end
   doc = Nokogiri::XML(res.body)
