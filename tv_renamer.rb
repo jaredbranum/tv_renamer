@@ -25,6 +25,7 @@ def rename_season(n=1, titles=false)
     else
       "#{show} - S#{pad_zero(n)}E#{pad_zero(ep)}.#{ext}"
     end
+    next if item == new_name
     puts "Rename \"#{item}\" to \"#{new_name}\"? [yes/no]"
     yn = gets.chomp
     if /^y(?:(?:es)|$)/i.match(yn)
