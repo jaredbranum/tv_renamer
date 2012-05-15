@@ -70,7 +70,9 @@ def rename_season(n=1)
     if confirm
       begin
         File.rename("#{dir}/#{item}", "#{dir}/#{new_name}")
-        puts "File renamed."
+        puts "#{dir}/#{item}"
+        puts "renamed to"
+        puts "#{dir}/#{new_name}."
       rescue
         puts "There was a problem renaming this file. File skipped."
       end
