@@ -21,7 +21,7 @@ ARGV.each do |a|
     process_arg(a)
   elsif a.length > 2 && a[0..1] == '--'
     process_arg(a[2..-1])
-  elsif a[0] == '-'
+  elsif a[0].chr == '-'
     a[1..-1].each_char{|c| process_arg(c) }
   end
 end
