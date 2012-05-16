@@ -86,7 +86,7 @@ def get_title(series, season, ep)
   url = URI.parse(URI.encode(API_PATH + "&show=#{series}&ep=#{season}x#{ep}"))
   begin
     res = Net::HTTP.get_response(url)
-  rescue Errno::ECONNRESET => e
+  rescue Errno::ECONNRESET, EOFError
     puts "Error retrieving episode title from database."
     return nil
   end
