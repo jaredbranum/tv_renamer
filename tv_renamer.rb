@@ -8,14 +8,14 @@ $settings = {
   :use_title => true,
   :force_title => false,
   :ask_every_time => true,
-  :verbose => false
+  :silent => false
 }
 def process_arg(arg)
   case arg
   when 'f', 'force-title' then $settings[:force_title] = true
   when 'n', 'no-title' then $settings[:use_title] = false
   when 'y', 'yes' then $settings[:ask_every_time] = false
-  when 'v', 'verbose' then $settings[:verbose] = true
+  when 's', 'silent' then $settings[:silent] = true
   end
 end
 ARGV.each do |a|
@@ -34,7 +34,7 @@ if $settings[:use_title]
   api_yaml = YAML::load(File.open(yaml_path))
   API_PATH = api_yaml['path']
 end
-unless $settings[:verbose]
+if $settings[:silent]
   def puts(s)
     nil
   end
@@ -80,7 +80,7 @@ def rename_season(n=1)
         puts "-" * 10
         puts "#{item}"
         puts "renamed to"
-        puts "#{new_name}."
+        puts "#{new_name}"
         puts "-" * 10
       rescue
         puts "There was a problem renaming this file. File skipped."
