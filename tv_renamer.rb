@@ -96,12 +96,17 @@ end
 
 @episode_title_cache = {}
 def populate_cache(series)
-  series_xml = open("#{API_PATH}GetSeries.php?seriesname=#{URI.encode(series)}")
-  doc = Nokogiri::XML(series_xml.read)
-  node = doc.xpath('/Data/Series/seriesid').first
-  return false if node.nil?
-  series_id = node.content
-  series_zip = open("#{API_PATH}#{API_KEY}/series/#{series_id}/all/en.zip")
+  begin
+    series_xml = open("#{API_PATH}GetSeries.php?seriesname=#{URI.encode(series)}")
+    doc = Nokogiri::XML(series_xml.read)
+    node = doc.xpath('/Data/Series/seriesid').first
+    return false if node.nil?
+    series_id = node.content
+    series_zip = open("#{API_PATH}#{API_KEY}/series/#{series_id}/all/en.zip")
+  rescue Timeout::Error
+    puts "API timeout. Retrying..."
+    populate_cache(series) and return
+  end
   @episode_title_cache[series] = {}
   Zip::Archive.open(series_zip.path) do |zf|
     zf.fopen('en.xml') do |f|
