@@ -1,8 +1,10 @@
 #!/usr/bin/env ruby
 require 'rubygems'
 require 'yaml'
-require 'net/http'
+require 'uri'
+require 'open-uri'
 require 'nokogiri'
+require 'zipruby'
 
 $settings = {
   :use_title => true,
@@ -31,8 +33,9 @@ $settings[:use_title] = true if $settings[:force_title]
 
 if $settings[:use_title]
   yaml_path = File.join(File.expand_path(File.dirname(__FILE__)), 'api.yaml')
-  api_yaml = YAML::load(File.open(yaml_path))
+  api_yaml = YAML::load(File.open(yaml_path))['thetvdb']
   API_PATH = api_yaml['path']
+  API_KEY = api_yaml['key']
 end
 if $settings[:silent]
   def puts(s)
@@ -91,17 +94,37 @@ def rename_season(n=1)
   end
 end
 
-def get_title(series, season, ep)
-  url = URI.parse(URI.encode(API_PATH + "&show=#{series}&ep=#{season}x#{ep}"))
-  begin
-    res = Net::HTTP.get_response(url)
-  rescue Errno::ECONNRESET, EOFError
-    puts "Error retrieving episode title from database."
-    return nil
+@episode_title_cache = {}
+def populate_cache(series)
+  series_xml = open("#{API_PATH}GetSeries.php?seriesname=#{URI.encode(series)}")
+  doc = Nokogiri::XML(series_xml.read)
+  node = doc.xpath('/Data/Series/seriesid').first
+  return false if node.nil?
+  series_id = node.content
+  series_zip = open("#{API_PATH}#{API_KEY}/series/#{series_id}/all/en.zip")
+  @episode_title_cache[series] = {}
+  Zip::Archive.open(series_zip.path) do |zf|
+    zf.fopen('en.xml') do |f|
+      doc = Nokogiri::XML(f.read)
+      @node = doc.xpath('/Data/Episode')
+      @node.each do |ep_node|
+        season_num = ep_node.xpath('SeasonNumber').first.content.to_i
+        episode_num = ep_node.xpath('EpisodeNumber').first.content.to_i
+        ep_title = ep_node.xpath('EpisodeName').first.content
+        unless @episode_title_cache[series].has_key?(season_num)
+          @episode_title_cache[series][season_num] = {}
+        end
+        @episode_title_cache[series][season_num][episode_num] = ep_title
+      end
+    end
   end
-  doc = Nokogiri::XML(res.body)
-  node = doc.xpath('/show/episode/title').first
-  node.nil? ? nil : node.content
+end
+
+def get_title(series, season, ep)
+  unless @episode_title_cache.has_key?(series)
+    populate_cache(series)
+  end
+  @episode_title_cache[series][season.to_i][ep.to_i]
 end
 
 def pad_zero(n)
