@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 require 'rubygems'
 require 'yaml'
-require 'net/http'
-require 'nokogiri'
+require 'open-uri'
+require 'json'
 
 $settings = {
   :use_title => true,
@@ -33,6 +33,7 @@ if $settings[:use_title]
   yaml_path = File.join(File.expand_path(File.dirname(__FILE__)), 'api.yaml')
   api_yaml = YAML::load(File.open(yaml_path))
   API_PATH = api_yaml['path']
+  API_KEY = api_yaml['key']
 end
 if $settings[:silent]
   def puts(s)
@@ -46,7 +47,7 @@ def rename_season(n=1)
   ep = 0
   Dir.foreach(dir) do |item|
     next if item[0].chr == '.'
-    if matchdata = /s?\d+[ex](\d+)/i.match(item)
+    if matchdata = /s?\d+\W?[ex](\d+)/i.match(item)
       ep = matchdata[1].to_i
     else
       ep += 1
@@ -92,16 +93,15 @@ def rename_season(n=1)
 end
 
 def get_title(series, season, ep)
-  url = URI.parse(URI.encode(API_PATH + "&show=#{series}&ep=#{season}x#{ep}"))
-  begin
-    res = Net::HTTP.get_response(url)
-  rescue Errno::ECONNRESET, EOFError
-    puts "Error retrieving episode title from database."
-    return nil
-  end
-  doc = Nokogiri::XML(res.body)
-  node = doc.xpath('/show/episode/title').first
-  node.nil? ? nil : node.content
+  @get_id_url ||= URI.encode("#{API_PATH}/search/tv?api_key=#{API_KEY}&query=#{series}")
+  @series_id ||= JSON.parse(open(@get_id_url).read)['results'].first['id']
+
+  get_title_url = URI.encode("#{API_PATH}/tv/#{@series_id}/season/#{season}/episode/#{ep}?api_key=#{API_KEY}")
+  JSON.parse(open(get_title_url).read)['name']
+rescue => e
+  puts e.inspect
+  puts "Error retrieving episode title from database."
+  return nil
 end
 
 def pad_zero(n)
