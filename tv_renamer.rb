@@ -93,11 +93,11 @@ def rename_season(n=1)
 end
 
 def get_title(series, season, ep)
-  @get_id_url ||= URI.encode("#{API_PATH}/search/tv?api_key=#{API_KEY}&query=#{series}")
-  @series_id ||= JSON.parse(open(@get_id_url).read)['results'].first['id']
+  @get_id_url ||= "#{API_PATH}/search/tv?api_key=#{API_KEY}&query=#{series}"
+  @series_id ||= JSON.parse(URI.open(@get_id_url).read)['results'].first['id']
 
-  get_title_url = URI.encode("#{API_PATH}/tv/#{@series_id}/season/#{season}/episode/#{ep}?api_key=#{API_KEY}")
-  JSON.parse(open(get_title_url).read)['name']
+  get_title_url = "#{API_PATH}/tv/#{@series_id}/season/#{season}/episode/#{ep}?api_key=#{API_KEY}"
+  JSON.parse(URI.open(get_title_url).read)['name']
 rescue => e
   puts e.inspect
   puts "Error retrieving episode title from database."
